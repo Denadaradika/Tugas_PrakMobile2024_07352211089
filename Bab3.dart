@@ -62,21 +62,294 @@ final List<Produk> produkList = [
     image: 'assets/images/buket_pink.jpeg',
     name: 'Buket Pink Royal',
     rating: 4.5,
-    price: 950000,
+    price: 63.33,
   ),
   Produk(
     image: 'assets/images/bunga_mawar.jpg',
     name: 'Buket Mawar Merah',
     rating: 4.7,
-    price: 1050000,
+    price: 70.00,
   ),
   Produk(
     image: 'assets/images/tanaman2.jpeg',
     name: 'Tanaman Hias',
     rating: 4.6,
-    price: 850000,
+    price: 56.67,
   ),
 ];
+
+class KeranjangScreen extends StatefulWidget {
+  const KeranjangScreen({super.key});
+
+  @override
+  State<KeranjangScreen> createState() => _KeranjangScreenState();
+}
+
+class _KeranjangScreenState extends State<KeranjangScreen> {
+  final Map<int, int> _jumlahProduk = {};
+
+  @override
+  void initState() {
+    super.initState();
+    for (var i = 0; i < produkList.length; i++) {
+      _jumlahProduk[i] = 1;
+    }
+  }
+
+  void _deleteItem(int index) {
+    setState(() {
+      produkList.removeAt(index);
+      _jumlahProduk.remove(index);
+    });
+  }
+
+  double _calculateSubtotal() {
+    double total = 0;
+    for (var i = 0; i < produkList.length; i++) {
+      total += produkList[i].price * (_jumlahProduk[i] ?? 1);
+    }
+    return total;
+  }
+
+  double _calculateDiscount() {
+    return _calculateSubtotal() * 0.01; // 1% discount
+  }
+
+  double _calculateDeliveryCharges() {
+    return 2.00; // Fixed delivery charge
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text("Cart"),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () {},
+            ),
+          ],
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: produkList.length,
+                itemBuilder: (context, index) {
+                  final produk = produkList[index];
+                  return Card(
+                    elevation: 0,
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.asset(
+                            produk.image,
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                produk.name,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                "\$${produk.price.toStringAsFixed(2)}",
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            // Delete button
+                            IconButton(
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.red,
+                                size: 20,
+                              ),
+                              onPressed: () => _deleteItem(index),
+                            ),
+                            // Quantity controls
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.deepPurple.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.remove,
+                                      color: Colors.deepPurple,
+                                      size: 20,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        if ((_jumlahProduk[index] ?? 1) > 1) {
+                                          _jumlahProduk[index] =
+                                              (_jumlahProduk[index] ?? 1) - 1;
+                                        }
+                                      });
+                                    },
+                                  ),
+                                  Text(
+                                    _jumlahProduk[index]
+                                        .toString()
+                                        .padLeft(2, '0'),
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.add,
+                                      color: Colors.deepPurple,
+                                      size: 20,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _jumlahProduk[index] =
+                                            (_jumlahProduk[index] ?? 1) + 1;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    spreadRadius: 1,
+                    blurRadius: 10,
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Order Summary",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Items"),
+                      Text("${produkList.length}"),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Subtotal"),
+                      Text("\$${_calculateSubtotal().toStringAsFixed(2)}"),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Discount"),
+                      Text("-\$${_calculateDiscount().toStringAsFixed(2)}"),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Delivery Charges"),
+                      Text(
+                          "\$${_calculateDeliveryCharges().toStringAsFixed(2)}"),
+                    ],
+                  ),
+                  const Divider(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Total",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        "\$${(_calculateSubtotal() - _calculateDiscount() + _calculateDeliveryCharges()).toStringAsFixed(2)}",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: () {},
+                      child: const Text(
+                        "Check Out",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+}
 
 class LayarUtama extends StatelessWidget {
   const LayarUtama({super.key});
@@ -114,7 +387,13 @@ class LayarUtama extends StatelessWidget {
             IconButton(
               icon:
                   const Icon(Icons.shopping_cart_outlined, color: Colors.black),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const KeranjangScreen()),
+                );
+              },
             ),
           ],
         ),
@@ -165,14 +444,14 @@ class LayarUtama extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Today\'s Deal',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
+                    const Text(
                       '50% OFF',
                       style: TextStyle(
                         fontSize: 24,
@@ -180,17 +459,17 @@ class LayarUtama extends StatelessWidget {
                         color: Colors.red,
                       ),
                     ),
-                    Text(
+                    const Text(
                       'Beli sekarang dan dapatkan diskon spesial!',
                       style: TextStyle(
                         fontSize: 16,
-                        color: const Color.fromARGB(255, 46, 45, 45),
+                        color: Color.fromARGB(255, 46, 45, 45),
                       ),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     ElevatedButton(
                       onPressed: () {},
-                      child: Text('BUY IT NOW'),
+                      child: const Text('BUY IT NOW'),
                     ),
                   ],
                 ),
@@ -300,8 +579,8 @@ class LayarUtama extends StatelessWidget {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  Row(
-                    children: const [
+                  const Row(
+                    children: [
                       Icon(Icons.star, color: Colors.amber, size: 16),
                       Text('4.5'),
                     ],
@@ -315,7 +594,7 @@ class LayarUtama extends StatelessWidget {
 
   Widget _bangunKartuLayanan() => Card(
         child: ListTile(
-          leading: CircleAvatar(
+          leading: const CircleAvatar(
             backgroundImage: AssetImage('assets/images/tatabunga.jpeg'),
           ),
           title: const Text('Penataan Bunga'),
@@ -375,7 +654,7 @@ class LayarUtama extends StatelessWidget {
                             // Row untuk gambar profil dan nama produk
                             Row(
                               children: [
-                                CircleAvatar(
+                                const CircleAvatar(
                                   radius: 20, // Ukuran gambar profil
                                   backgroundImage: AssetImage(
                                       'assets/images/profil.jpeg'), // Ganti dengan path gambar profil
@@ -516,7 +795,7 @@ class LayarUtama extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'Pelayanan Terbaik',
                   style: TextStyle(
                     fontSize: 18,
@@ -526,7 +805,7 @@ class LayarUtama extends StatelessWidget {
                 ),
                 TextButton(
                   onPressed: () {},
-                  child: Text('View All'),
+                  child: const Text('View All'),
                 ),
               ],
             ),
@@ -557,8 +836,8 @@ class LayarUtama extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(12),
+            const Padding(
+              padding: EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -569,8 +848,8 @@ class LayarUtama extends StatelessWidget {
                         backgroundImage:
                             AssetImage('assets/images/profil.jpeg'),
                       ),
-                      const SizedBox(width: 8),
-                      const Text(
+                      SizedBox(width: 8),
+                      Text(
                         'Miss Denayra',
                         style: TextStyle(
                           fontSize: 16,
@@ -579,14 +858,14 @@ class LayarUtama extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  const Text(
+                  SizedBox(height: 4),
+                  Text(
                     'Florist in Indonesia',
                     style: TextStyle(color: Colors.grey),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   Row(
-                    children: const [
+                    children: [
                       Icon(Icons.star, color: Colors.amber, size: 16),
                       SizedBox(width: 4),
                       Text('4.9'),
@@ -657,8 +936,8 @@ class LayarUtama extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 6),
-                  Row(
-                    children: const [
+                  const Row(
+                    children: [
                       Icon(Icons.star, color: Colors.amber, size: 16),
                       SizedBox(width: 4),
                       Text('4.5'),
